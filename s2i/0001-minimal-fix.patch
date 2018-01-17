@@ -1,0 +1,35 @@
+From 44362d442860621625d7ed653c5061b54b2d7076 Mon Sep 17 00:00:00 2001
+From: Tomas Tomecek <ttomecek@redhat.com>
+Date: Wed, 17 Jan 2018 15:33:05 +0100
+Subject: [PATCH] minimal fix
+
+Signed-off-by: Tomas Tomecek <ttomecek@redhat.com>
+---
+ 1.12/s2i/bin/assemble             | 6 ++++++
+ examples/1.12/test-app/nginx.conf | 0
+ 2 files changed, 6 insertions(+)
+ create mode 100644 examples/1.12/test-app/nginx.conf
+
+diff --git a/1.12/s2i/bin/assemble b/1.12/s2i/bin/assemble
+index 65ba990..54c505e 100755
+--- a/1.12/s2i/bin/assemble
++++ b/1.12/s2i/bin/assemble
+@@ -5,6 +5,12 @@ set -e
+ echo "---> Installing application source"
+ cp -Rf /tmp/src/. ./
+ 
++if [ -f ./nginx.conf ]; then
++  echo "---> Copying nginx.conf configuration file..."
++  cp -v ./nginx.conf /etc/opt/rh/rh-nginx112/nginx/nginx.conf
++  rm -f ./nginx.conf
++fi
++
+ if [ -d ./nginx-cfg ]; then
+   echo "---> Copying nginx configuration files..."
+   if [ "$(ls -A ./nginx-cfg/*.conf)" ]; then
+diff --git a/examples/1.12/test-app/nginx.conf b/examples/1.12/test-app/nginx.conf
+new file mode 100644
+index 0000000..e69de29
+-- 
+2.15.1
+
