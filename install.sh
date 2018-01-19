@@ -180,8 +180,9 @@ function check_system(){
 
 function create_usb(){
     DISC=$1
+    TEMPMOUNT=`mktemp -d`
     if [ -z "$DISC" ]; then
-        echo "missing parameter where to put data (like /dev/sdb1)"
+        echo "missing parameter where to put data (like sdb1)"
         exit 122
     fi
     IMNA=Fedora-Workstation-Live-x86_64-27-1.6.iso
@@ -190,11 +191,12 @@ function create_usb(){
     fi
     sudo livecd-iso-to-disk --format --msdos --reset-mbr \
       --overlay-size-mb 4000 $IMNA /dev/$DISC
-    mkdir -p /mnt/tempmount
-    sudo mount /dev/$DEV /mnt/tempmount
-    cp -rfv $SCRIPTNAME $BASE /mnt/tempmount
-    umount /mnt/tempmount
-
+    sudo sync
+    sudo partprobe
+    sudo mount /dev/$DEV $TEMPMOUNT
+    sudo cp -rfv $SCRIPTNAME $BASE $TEMPMOUNT
+    sudo umount $TEMPMOUNT
+    rm -fr $TEMPMOUNT
 }
 
 METHOD=$1
