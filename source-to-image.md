@@ -18,7 +18,7 @@ $ git clone --recursive https://github.com/sclorg/nginx-container
  * `root/opt/app-root`, more weird stuff
  * oh nice, tests, can we run them?
    ```
-   make check VERSION="1.12" SKIP_SQUASH=1
+   cd .. && make check VERSION="1.12" SKIP_SQUASH=1
    ```
  * or
    ```
@@ -36,7 +36,12 @@ $ docker run -p 8080:8080 --name=ng our-nginx-app
 $ curl -q http://0.0.0.0:8080/
 ```
 
-Oh cool. I need to use nginx [`upstream`]() directive for my app.
+Let's have a look at the `test-app` first:
+```
+$ ls -lha test/test-app/
+```
+
+Oh cool. I need to use nginx [`upstream`](http://nginx.org/en/docs/http/ngx_http_upstream_module.html) directive for my app.
 
 
 ## Let's make this container image better!
@@ -67,3 +72,10 @@ bash-4.2$ rpm -ql $(rpm -qa | grep nginx) | grep conf
 ```
 $ docker cp ng:/etc/opt/rh/rh-nginx112/nginx/nginx.conf .
 ```
+
+And now just edit the assemble script:
+```
+$ $EDITOR s2i/bin/assemble
+```
+
+[For cheaters.](https://github.com/phracek/devconf2018-workshop/blob/master/s2i/0001-minimal-fix.patch)

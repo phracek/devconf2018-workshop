@@ -9,4 +9,4 @@ Cook books for DevConf2018 - workshop
  * conu
  * best practices
  * distgen
- * [source-to-image](/source-to-image.md)
+ * [source-to-image](/source-to-image.md) + containerized services
