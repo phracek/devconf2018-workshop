@@ -2,12 +2,11 @@
 
 SCRIPTNAME="install.sh"
 
-I_FEDORA="registry.fedoraproject.org/fedora"
+I_FEDORA="registry.fedoraproject.org/fedora:27"
+I_NGINX="docker.io/centos/nginx-112-centos7"
 I_MEMCACHED="modularitycontainers/memcached"
-I_DOVECOT="modularitycontainers/dovecot"
-I_HAPROXY="modularitycontainers/haproxy"
 I_TESTTOOLS="container-test-tools"
-IMAGES="$I_FEDORA $I_MEMCACHED $I_DOVECOT $I_HAPROXY"
+IMAGES="$I_FEDORA $I_NGINX $I_MEMCACHED"
 
 PACKAGES="meta-test-family conu distgen source-to-image"
 
@@ -20,7 +19,7 @@ function pack_images(){
     for foo in $IMAGES; do
         docker pull $foo
     done
-    
+
     echo "FROM docker.io/modularitycontainers/conu:dev
 
 ENV PYTHONDONTWRITEBYTECODE=yes-please
