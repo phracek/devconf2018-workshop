@@ -20,7 +20,7 @@ function pack_images(){
     for foo in $IMAGES; do
         docker pull $foo
     done
-    
+
     echo "FROM docker.io/modularitycontainers/conu:dev
 
 ENV PYTHONDONTWRITEBYTECODE=yes-please
