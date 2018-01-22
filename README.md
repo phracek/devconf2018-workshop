@@ -6,7 +6,7 @@ Cook books for DevConf2018 - workshop
 ## Agenda
 
  * [MTF](/MTF.md)
- * conu
+ * [conu](/conu.md)
  * [best practices](http://docs.projectatomic.io/container-best-practices/)
  * distgen
  * [source-to-image](/source-to-image.md) + containerized services
