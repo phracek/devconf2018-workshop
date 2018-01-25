@@ -8,7 +8,7 @@ I_MEMCACHED="modularitycontainers/memcached"
 #I_TESTTOOLS="container-test-tools"
 IMAGES="$I_FEDORA $I_NGINX $I_MEMCACHED"
 
-PACKAGES="meta-test-family conu distgen source-to-image"
+PACKAGES="meta-test-family python3-conu python2-conu distgen source-to-image"
 
 BASE="build"
 BUILDDIR="$BASE/images"
@@ -61,6 +61,7 @@ function download_rpms_locally(){
         INTDIR=`readlink -e $RPMS/fedora$VERS`
         sudo dnf -y install --disablerepo=* \
          --enablerepo=phracek-meta-test-family-devel \
+         --enablerepo=ttomecek-conu \
          --enablerepo=avocado \
          --enablerepo=fedora \
          --enablerepo=updates \
@@ -82,6 +83,7 @@ function install_packages(){
     if [ ! -e /usr/share/moduleframework ]; then
         sudo dnf -y install dnf-plugins-core
         sudo dnf -y copr enable phracek/meta-test-family-devel
+        sudo dnf -y copr enable ttomecek/conu
         sudo dnf -y install $PACKAGES
      fi
 }
@@ -173,6 +175,7 @@ function bootstrap_iso(){
     sudo dnf -y install livecd-tools spin-kickstarts
     echo "
 repo --name=phracekcopr --baseurl=https://copr-be.cloud.fedoraproject.org/results/phracek/meta-test-family-devel/fedora-26-x86_64/
+repo --name=tomecekcopr --baseurl=https://copr-be.cloud.fedoraproject.org/results/ttomecek/conu/fedora-26-x86_64/
 
 %include /usr/share/spin-kickstarts/fedora-live-workstation.ks
 
@@ -198,7 +201,9 @@ fedora-productimg-workstation
 meta-test-family
 distgen
 source-to-image
-conu
+python2-conu
+python3-conu
+
 
 %end
 
@@ -206,6 +211,7 @@ conu
 set -x
 mkdir -p \$INSTALL_ROOT/opt/$BASE
 cp -rf `pwd`/$BUILDDIR \$INSTALL_ROOT/opt/$BASE/
+cp -rf `pwd`/$BASE/*.zip \$INSTALL_ROOT/opt/$BASE/
 cp -rf `pwd`/install.sh \$INSTALL_ROOT/opt
 %end
 " > customized.ks
@@ -229,7 +235,7 @@ function create_usb(){
         bootstrap_iso
         IMNA=`ls livecd-customized*|tail -1`
     fi
-    sudo livecd-iso-to-disk --format --msdos --reset-mbr $IMNA $DEV
+    sudo livecd-iso-to-disk --format --reset-mbr $IMNA $DEV
     # --overlay-size-mb 1000
     sudo sync
     sudo partprobe
