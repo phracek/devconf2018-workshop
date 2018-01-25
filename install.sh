@@ -206,6 +206,7 @@ conu
 set -x
 mkdir -p \$INSTALL_ROOT/opt/$BASE
 cp -rf `pwd`/$BUILDDIR \$INSTALL_ROOT/opt/$BASE/
+cp -rf `pwd`/$BASE/*.zip \$INSTALL_ROOT/opt/$BASE/
 cp -rf `pwd`/install.sh \$INSTALL_ROOT/opt
 %end
 " > customized.ks
@@ -229,7 +230,7 @@ function create_usb(){
         bootstrap_iso
         IMNA=`ls livecd-customized*|tail -1`
     fi
-    sudo livecd-iso-to-disk --format --msdos --reset-mbr $IMNA $DEV
+    sudo livecd-iso-to-disk --format --reset-mbr $IMNA $DEV
     # --overlay-size-mb 1000
     sudo sync
     sudo partprobe
