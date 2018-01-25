@@ -5,7 +5,7 @@ SCRIPTNAME="install.sh"
 I_FEDORA="registry.fedoraproject.org/fedora:27"
 I_NGINX="docker.io/centos/nginx-112-centos7"
 I_MEMCACHED="modularitycontainers/memcached"
-I_TESTTOOLS="container-test-tools"
+#I_TESTTOOLS="container-test-tools"
 IMAGES="$I_FEDORA $I_NGINX $I_MEMCACHED"
 
 PACKAGES="meta-test-family conu distgen source-to-image"
@@ -31,7 +31,7 @@ RUN dnf install -y nmap-ncat make python2-pytest python3-pytest && \\
     dnf -y copr enable phracek/meta-test-family-devel && \\
     dnf -y install $PACKAGES
 " > Dockerfile.$I_TESTTOOLS
-    docker build --network host --tag=$I_TESTTOOLS -f ./Dockerfile.$I_TESTTOOLS .
+    #docker build --network host --tag=$I_TESTTOOLS -f ./Dockerfile.$I_TESTTOOLS .
 
     for foo in $IMAGES $I_TESTTOOLS; do
         echo "Saving $foo"
@@ -79,9 +79,11 @@ function bootstrap(){
 }
 
 function install_packages(){
-    sudo dnf -y install dnf-plugins-core
-    sudo dnf -y copr enable phracek/meta-test-family-devel
-    sudo dnf -y install $PACKAGES
+    if [ ! -e /usr/share/moduleframework ]; then
+        sudo dnf -y install dnf-plugins-core
+        sudo dnf -y copr enable phracek/meta-test-family-devel
+        sudo dnf -y install $PACKAGES
+     fi
 }
 
 function install_gits(){
@@ -94,6 +96,9 @@ function install_gits(){
 }
 
 function import_images(){
+    if [ ! -e /var/run/docker.sock ]; then
+        sudo systemctl start docker
+    fi
     if [ ! -d "$BUILDDIR" ]; then
         echo "$BUILDDIR does not exist, you have to bootstrap it here (like: $SCRIPTNAME bootstrap)"
         usage
@@ -106,21 +111,7 @@ function import_images(){
     done
 }
 
-function install(){
-    DEST=$1
-    if [ -z "$DEST" ]; then
-        echo "Missing directory name or is not directory"
-        usage
-        exit 1
-    fi
-    import_images
-    mkdir -p "$DEST"
 
-    echo "Copy related stuff to you directory"
-    cp $SCRIPTNAME $DEST
-    install_gits $DEST
-
-}
 
 function usage(){
     echo "
@@ -177,7 +168,54 @@ function check_system(){
 
 }
 
+function bootstrap_iso(){
+    # https://fedoraproject.org/wiki/How_to_create_and_use_a_Live_CD
+    sudo dnf -y install livecd-tools spin-kickstarts
+    echo "
+repo --name=phracekcopr --baseurl=https://copr-be.cloud.fedoraproject.org/results/phracek/meta-test-family-devel/fedora-26-x86_64/
+
+%include /usr/share/spin-kickstarts/fedora-live-workstation.ks
+
+%packages
+# Make sure to sync any additions / removals done here with
+# workstation-product-environment in comps
+@base-x
+@core
+@firefox
+@fonts
+@gnome-desktop
+@guest-desktop-agents
+@hardware-support
+@libreoffice
+@multimedia
+@networkmanager-submodules
+@printing
+@workstation-product
+
+# Branding for the installer
+fedora-productimg-workstation
+
+meta-test-family
+distgen
+source-to-image
+conu
+
+%end
+
+%post --nochroot
+set -x
+mkdir -p \$INSTALL_ROOT/opt/$BASE
+cp -rf `pwd`/$BUILDDIR \$INSTALL_ROOT/opt/$BASE/
+cp -rf `pwd`/install.sh \$INSTALL_ROOT/opt
+%end
+" > customized.ks
+
+     sudo livecd-creator --verbose --config=customized.ks --cache=/var/cache/live
+
+}
+
 function create_usb(){
+    set -x
     DISC=$1
     DEV=/dev/$DISC
     TEMPMOUNT=`mktemp -d`
@@ -185,12 +223,14 @@ function create_usb(){
         echo "missing parameter where to put data (like sdb1)"
         exit 122
     fi
-    IMNA=Fedora-Workstation-Live-x86_64-27-1.6.iso
-    if [ ! -e $IMNA ]; then
-        wget http://ftp.fi.muni.cz/pub/linux/fedora/linux/releases/27/Workstation/x86_64/iso/$IMNA
+    sudo umount $DEV
+    IMNA=`ls livecd-customized*|tail -1`
+    if [ -z "$IMNA" ]; then
+        bootstrap_iso
+        IMNA=`ls livecd-customized*|tail -1`
     fi
-    sudo livecd-iso-to-disk --format --msdos --reset-mbr \
-      --overlay-size-mb 4000 $IMNA $DEV
+    sudo livecd-iso-to-disk --format --msdos --reset-mbr $IMNA $DEV
+    # --overlay-size-mb 1000
     sudo sync
     sudo partprobe
     sudo mount $DEV $TEMPMOUNT
@@ -199,11 +239,28 @@ function create_usb(){
     rm -fr $TEMPMOUNT
 }
 
+function install(){
+    DEST=$1
+    if [ -z "$DEST" ]; then
+        echo "Missing directory name or is not directory"
+        usage
+        exit 1
+    fi
+    install_packages
+    import_images
+    mkdir -p "$DEST"
+
+    echo "Copy related stuff to you directory"
+    cp $SCRIPTNAME $DEST
+    install_gits $DEST
+
+}
+
 METHOD=$1
 if [ -z $METHOD ]; then
     echo "if you want to unpact git repos use install method as parameter try $SCRIPTNAME usage:"
-    import_images
     install_packages
+    import_images
 
 fi
 shift
