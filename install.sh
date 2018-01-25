@@ -61,6 +61,7 @@ function download_rpms_locally(){
         INTDIR=`readlink -e $RPMS/fedora$VERS`
         sudo dnf -y install --disablerepo=* \
          --enablerepo=phracek-meta-test-family-devel \
+         --enablerepo=ttomecek-conu \
          --enablerepo=avocado \
          --enablerepo=fedora \
          --enablerepo=updates \
