@@ -39,11 +39,20 @@ build
 install.sh
 ```
 
-### As live CD/USB
+#### As live CD/USB
  * it contains preinstalled packages ``s2i, distgen, conu, mtf``
  * other stuff are located in ``/opt/`` directory
  * call(/click) ``./install.sh`` there to import docker images
 
-### As data source
+#### As data source
  * mount the disc, there is ``./install.sh`` script what will help you to deploy it on your machine
  * ``./install.sh install DIRECTORY`` it unpack zipped git repositories to selected location
+
+
+#### Example how to use MTF inside this USB key
+```
+export DOCKERFILE=/usr/share/moduleframework/examples/testing-module/Dockerfile
+export MODULE=docker
+mtf --url=docker=registry.fedoraproject.org/fedora:27 -l
+
+```

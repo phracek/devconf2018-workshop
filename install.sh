@@ -8,7 +8,7 @@ I_MEMCACHED="modularitycontainers/memcached"
 #I_TESTTOOLS="container-test-tools"
 IMAGES="$I_FEDORA $I_NGINX $I_MEMCACHED"
 
-PACKAGES="meta-test-family conu distgen source-to-image"
+PACKAGES="meta-test-family python3-conu python2-conu distgen source-to-image"
 
 BASE="build"
 BUILDDIR="$BASE/images"
@@ -82,6 +82,7 @@ function install_packages(){
     if [ ! -e /usr/share/moduleframework ]; then
         sudo dnf -y install dnf-plugins-core
         sudo dnf -y copr enable phracek/meta-test-family-devel
+        sudo dnf -y copr enable ttomecek/conu
         sudo dnf -y install $PACKAGES
      fi
 }
@@ -173,6 +174,7 @@ function bootstrap_iso(){
     sudo dnf -y install livecd-tools spin-kickstarts
     echo "
 repo --name=phracekcopr --baseurl=https://copr-be.cloud.fedoraproject.org/results/phracek/meta-test-family-devel/fedora-26-x86_64/
+repo --name=tomecekcopr --baseurl=https://copr-be.cloud.fedoraproject.org/results/ttomecek/conu/fedora-26-x86_64/
 
 %include /usr/share/spin-kickstarts/fedora-live-workstation.ks
 
@@ -198,7 +200,9 @@ fedora-productimg-workstation
 meta-test-family
 distgen
 source-to-image
-conu
+python2-conu
+python3-conu
+
 
 %end
 
