@@ -13,14 +13,14 @@ Cook books for DevConf2018 - workshop
 
 ## Using data stored on USB key
  * It contains:
-  * Live USB
-  * gzipped container images
+   * Live USB
+ * gzipped container images
    * ``build/images``
-  * RPM packages for Fedora 26.27, rawhide
+ * RPM packages for Fedora 26.27, rawhide
    * ``build/rpms``
-  * zipped git repositories
+ * zipped git repositories
    * ``build/*.zip``
-  * main script is ``./install.sh`` call it with ``usage`` param, to see what you can use
+ * main script is ``./install.sh`` call it with ``usage`` param, to see what you can use
 
 ```
 build
