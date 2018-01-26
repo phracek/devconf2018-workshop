@@ -1,0 +1,19 @@
+version: 1
+
+specs:
+  distroinfo:
+    centos:
+      distros:
+        - centos-7-x86_64
+  version:
+    one_dot_twelve:
+      version: "1.12"
+      version_nodot: "112"
+    one_dot_ten:
+      version: "1.10"
+      version_nodot: "110"
+  scl:
+    "yes":
+      volume: "/var/opt/rh/rh-nginx112/log/nginx/"
+    "no":
+      volume: "/var/log/nginx/"

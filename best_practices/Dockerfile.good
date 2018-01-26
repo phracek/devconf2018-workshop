@@ -1,4 +1,4 @@
-FROM centos/s2i-core-centos7
+FROM {{ config.docker.registry }}/s2i-core-{{ config.os.id }}{{ config.os.version }}
 
 # RHSCL rh-nginx112 image.
 #
@@ -8,7 +8,7 @@ FROM centos/s2i-core-centos7
 EXPOSE 8080
 EXPOSE 8443
 
-ENV NGINX_VERSION=1.12
+ENV NGINX_VERSION={{ spec.nginx_version }}
 
 ENV SUMMARY="Platform for running nginx $NGINX_VERSION or building nginx-based application" \
     DESCRIPTION="Nginx is a web server and a reverse proxy server for HTTP, SMTP, POP3 and IMAP \
@@ -31,13 +31,13 @@ LABEL summary="$SUMMARY" \
 ENV NGINX_CONFIGURATION_PATH=/opt/app-root/etc/nginx.d
 ENV NGINX_DEFAULT_CONF_PATH=/opt/app-root/etc/nginx.default.d
 
-RUN yum install -y yum-utils gettext hostname && \
+RUN {{ commands.pkginstaller.install(['yum-utils', 'gettext',  'hostname']) }} && \
     yum install -y centos-release-scl-rh epel-release && \
     yum-config-manager --enable centos-sclo-rh-testing && \
     INSTALL_PKGS="nss_wrapper bind-utils rh-nginx112 rh-nginx112-nginx" && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
-    yum clean all
+    {{ commands.pkginstaller.cleancache() }}
 
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
@@ -59,7 +59,7 @@ RUN sed -i -f /opt/app-root/nginxconf.sed /etc/opt/rh/rh-nginx112/nginx/nginx.co
 USER 1001
 
 VOLUME ["/opt/rh/rh-nginx112/root/usr/share/nginx/html"]
-VOLUME ["/var/opt/rh/rh-nginx112/log/nginx/"]
+VOLUME ["{{ spec.volume }}"]
 
 ENV BASH_ENV=/opt/app-root/etc/scl_enable \
     ENV=/opt/app-root/etc/scl_enable \
